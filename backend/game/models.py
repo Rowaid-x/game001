@@ -61,12 +61,13 @@ class Player(models.Model):
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='players')
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True, related_name='players')
     name = models.CharField(max_length=100)
-    session_key = models.CharField(max_length=255, unique=True, db_index=True)
+    session_key = models.CharField(max_length=255, db_index=True)
     is_host = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['created_at']
+        unique_together = ['game', 'session_key']
 
     def __str__(self):
         return f"{self.name} (Game {self.game.code})"
