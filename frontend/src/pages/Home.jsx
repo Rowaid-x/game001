@@ -19,7 +19,7 @@ export default function Home() {
     setError('');
     try {
       const sessionKey = getOrCreateSessionKey();
-      const res = await api.createGame(hostName.trim());
+      const res = await api.createGame(hostName.trim(), sessionKey);
       localStorage.setItem('game001_player_id', res.player_id);
       localStorage.setItem('game001_session', sessionKey);
       navigate(`/game/${res.code}`);

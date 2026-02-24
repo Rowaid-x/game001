@@ -34,10 +34,7 @@ class GameViewSet(viewsets.GenericViewSet):
         serializer = CreateGameSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        session_key = request.session.session_key
-        if not session_key:
-            request.session.create()
-            session_key = request.session.session_key
+        session_key = request.data.get('session_key', '') or f'host_{uuid.uuid4().hex[:16]}'
 
         result = GameService.create_game(
             host_name=serializer.validated_data['host_name'],

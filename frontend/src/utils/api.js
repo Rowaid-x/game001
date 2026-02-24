@@ -22,7 +22,7 @@ async function request(method, path, data = null) {
 
 const api = {
   // Games
-  createGame: (hostName) => request('POST', '/games/', { host_name: hostName }),
+  createGame: (hostName, sessionKey) => request('POST', '/games/', { host_name: hostName, session_key: sessionKey }),
   getGame: (code) => request('GET', `/games/${code}/`),
   joinGame: (code, playerName, sessionKey) =>
     request('POST', `/games/${code}/join/`, { player_name: playerName, session_key: sessionKey }),
