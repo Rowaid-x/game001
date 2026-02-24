@@ -1,6 +1,8 @@
 """API views for 001 Game."""
 import uuid
 import logging
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -209,6 +211,17 @@ class RoundViewSet(viewsets.GenericViewSet):
         """POST /api/rounds/{id}/actor-ready/ — Actor is ready."""
         try:
             game_round = GameService.actor_ready(pk)
+            # Broadcast to host via WebSocket
+            game_code = game_round.game.code
+            state = GameService.get_game_state(game_code)
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'game_{game_code}',
+                {
+                    'type': 'broadcast_actor_ready',
+                    'data': state,
+                }
+            )
             return Response(RoundSerializer(game_round).data)
         except Round.DoesNotExist:
             return Response({'error': 'Round not found'}, status=status.HTTP_404_NOT_FOUND)
