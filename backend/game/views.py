@@ -31,23 +31,27 @@ class GameViewSet(viewsets.GenericViewSet):
 
     def create(self, request):
         """POST /api/games/ — Create a new game."""
-        serializer = CreateGameSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer = CreateGameSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
 
-        session_key = request.data.get('session_key', '') or f'host_{uuid.uuid4().hex[:16]}'
+            session_key = request.data.get('session_key', '') or f'host_{uuid.uuid4().hex[:16]}'
 
-        result = GameService.create_game(
-            host_name=serializer.validated_data['host_name'],
-            session_key=session_key,
-        )
+            result = GameService.create_game(
+                host_name=serializer.validated_data['host_name'],
+                session_key=session_key,
+            )
 
-        game = result['game']
-        return Response({
-            'code': game.code,
-            'game': GameSerializer(game).data,
-            'player_id': str(result['host'].id),
-            'session_key': session_key,
-        }, status=status.HTTP_201_CREATED)
+            game = result['game']
+            return Response({
+                'code': game.code,
+                'game': GameSerializer(game).data,
+                'player_id': str(result['host'].id),
+                'session_key': session_key,
+            }, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.error(f"Error creating game: {e}", exc_info=True)
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def retrieve(self, request, code=None):
         """GET /api/games/{code}/ — Get game state."""
