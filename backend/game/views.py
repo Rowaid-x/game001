@@ -2,10 +2,13 @@
 import uuid
 import logging
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from .models import Game, Team, Player, Category, Prompt, Round
 from .serializers import (
     GameSerializer, TeamSerializer, CategorySerializer, RoundSerializer,
@@ -18,6 +21,7 @@ from .services import GameService
 logger = logging.getLogger('game')
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class GameViewSet(viewsets.GenericViewSet):
     """Game management endpoints."""
     lookup_field = 'code'
@@ -148,12 +152,14 @@ class GameViewSet(viewsets.GenericViewSet):
             return Response({'error': 'Game not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """Category listing endpoints."""
     queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RoundViewSet(viewsets.GenericViewSet):
     """Round action endpoints."""
 

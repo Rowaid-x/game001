@@ -140,6 +140,15 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 ).split(',')
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
+# CSRF Configuration for SPA
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://localhost:3000'
+).split(',')
+CSRF_TRUSTED_ORIGINS.extend(CORS_ALLOWED_ORIGINS)
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax' if DEBUG else 'Strict'
+
 # Base URL for QR code generation
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5173')
 
