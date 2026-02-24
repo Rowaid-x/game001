@@ -60,7 +60,7 @@ export function formatTime(seconds) {
 export function getOrCreateSessionKey() {
   let key = localStorage.getItem('game001_session');
   if (!key) {
-    key = 'sess_' + crypto.randomUUID();
+    key = 'sess_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
     localStorage.setItem('game001_session', key);
   }
   return key;
