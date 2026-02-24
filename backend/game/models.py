@@ -138,6 +138,7 @@ class Round(models.Model):
         ('selecting_category', 'Selecting Category'),
         ('selecting_actor', 'Selecting Actor'),
         ('showing_qr', 'Showing QR'),
+        ('prompt_reveal', 'Prompt Reveal'),
         ('actor_ready', 'Actor Ready'),
         ('active', 'Active'),
         ('guessed', 'Guessed'),

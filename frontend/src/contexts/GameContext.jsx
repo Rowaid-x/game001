@@ -85,6 +85,9 @@ export function GameProvider({ gameCode, children }) {
     joinGame: (playerName, sessionKey) =>
       sendMessage({ type: 'join_game', player_name: playerName, session_key: sessionKey }),
 
+    addPlayer: (playerName, teamId) =>
+      sendMessage({ type: 'add_player', player_name: playerName, team_id: teamId }),
+
     assignPlayer: (playerId, teamId) =>
       sendMessage({ type: 'assign_player', player_id: playerId, team_id: teamId }),
 

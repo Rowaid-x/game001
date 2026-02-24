@@ -69,6 +69,18 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             'player': {'id': str(player.id), 'name': player.name},
         })
 
+    async def handle_add_player(self, content):
+        player_name = content.get('player_name', '')
+        team_id = content.get('team_id', '')
+
+        player = await self._host_add_player(player_name, team_id)
+        state = await self._get_game_state()
+
+        await self.channel_layer.group_send(self.group_name, {
+            'type': 'broadcast_team_updated',
+            'data': state,
+        })
+
     async def handle_assign_player(self, content):
         player_id = content.get('player_id', '')
         team_id = content.get('team_id', '')
@@ -291,6 +303,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _join_game(self, player_name, session_key):
         return GameService.join_game(self.game_code, player_name, session_key)
+
+    @database_sync_to_async
+    def _host_add_player(self, player_name, team_id):
+        return GameService.host_add_player(self.game_code, player_name, team_id or None)
 
     @database_sync_to_async
     def _assign_player(self, player_id, team_id):

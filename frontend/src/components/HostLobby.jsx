@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useGame } from '../contexts/GameContext';
 import { getBaseUrl } from '../utils/constants';
-import { Users, Settings, Play, ChevronRight, Palette, ArrowRightLeft } from 'lucide-react';
+import { Users, Settings, Play, ChevronRight, Palette, ArrowRightLeft, UserPlus, Plus } from 'lucide-react';
 import api from '../utils/api';
 import CategoryPicker from './CategoryPicker';
 
 export default function HostLobby() {
-  const { gameState, assignPlayer, updateTeam, startGame, updateSettings } = useGame();
+  const { gameState, addPlayer, assignPlayer, updateTeam, startGame, updateSettings } = useGame();
   const [categories, setCategories] = useState([]);
   const [selectedCats, setSelectedCats] = useState([]);
   const [showSettings, setShowSettings] = useState(false);
   const [error, setError] = useState('');
+  const [newPlayerNames, setNewPlayerNames] = useState({});
 
   const joinUrl = `${getBaseUrl()}/join/${gameState.code}`;
 
@@ -22,6 +23,13 @@ export default function HostLobby() {
       setSelectedCats(cats.map((c) => c.id));
     }).catch(() => {});
   }, []);
+
+  const handleAddPlayer = (teamId) => {
+    const name = (newPlayerNames[teamId] || '').trim();
+    if (!name) return;
+    addPlayer(name, teamId);
+    setNewPlayerNames((prev) => ({ ...prev, [teamId]: '' }));
+  };
 
   const handleAssign = (playerId, teamId) => {
     assignPlayer(playerId, teamId);
@@ -107,7 +115,7 @@ export default function HostLobby() {
                   <span className="text-white/30 text-sm">{team.players?.length || 0} players</span>
                 </div>
 
-                <div className="space-y-2 min-h-[80px]">
+                <div className="space-y-2 min-h-[60px]">
                   {team.players?.map((player) => (
                     <div key={player.id} className="flex items-center justify-between px-3 py-2 bg-white/5 rounded-xl">
                       <span className="text-white font-medium">{player.name}</span>
@@ -116,11 +124,25 @@ export default function HostLobby() {
                       )}
                     </div>
                   ))}
-                  {(!team.players || team.players.length === 0) && (
-                    <div className="text-center py-6 text-white/20 text-sm">
-                      No players yet
-                    </div>
-                  )}
+                </div>
+
+                {/* Add player input */}
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/10">
+                  <input
+                    type="text"
+                    value={newPlayerNames[team.id] || ''}
+                    onChange={(e) => setNewPlayerNames((prev) => ({ ...prev, [team.id]: e.target.value }))}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddPlayer(team.id)}
+                    placeholder="Add player name..."
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-white/30 outline-none focus:border-white/30"
+                  />
+                  <button
+                    onClick={() => handleAddPlayer(team.id)}
+                    className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                    style={{ color: team.color }}
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             ))}

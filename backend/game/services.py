@@ -63,6 +63,26 @@ class GameService:
         return player
 
     @staticmethod
+    def host_add_player(game_code: str, player_name: str, team_id: str = None) -> Player:
+        """Host adds a player by name (no phone/QR needed)."""
+        game = Game.objects.get(code=game_code.upper())
+
+        if game.status != 'lobby':
+            raise ValueError("Game has already started")
+
+        session_key = f'host_added_{uuid.uuid4().hex[:12]}'
+        team = Team.objects.get(id=team_id) if team_id else None
+
+        player = Player.objects.create(
+            game=game,
+            name=player_name,
+            session_key=session_key,
+            team=team,
+        )
+        logger.info(f"Host added player {player_name} to game {game.code}")
+        return player
+
+    @staticmethod
     def assign_player_to_team(player_id: str, team_id: str) -> Player:
         """Assign a player to a team."""
         player = Player.objects.get(id=player_id)
@@ -184,7 +204,7 @@ class GameService:
         game_round.category = category
         game_round.prompt = prompt
         game_round.token = token
-        game_round.status = 'showing_qr'
+        game_round.status = 'prompt_reveal'
         game_round.save()
 
         prompt.times_used += 1
@@ -201,7 +221,7 @@ class GameService:
         if game_round.token != token:
             raise PermissionError("Invalid token")
 
-        if game_round.status not in ('showing_qr', 'actor_ready', 'active'):
+        if game_round.status not in ('showing_qr', 'prompt_reveal', 'actor_ready', 'active'):
             raise ValueError("Round is not in a valid state to view prompt")
 
         prompt = game_round.prompt
@@ -229,6 +249,8 @@ class GameService:
     def start_timer(round_id: str) -> Round:
         """Start the round timer."""
         game_round = Round.objects.get(id=round_id)
+        if game_round.status not in ('actor_ready', 'prompt_reveal', 'showing_qr'):
+            raise ValueError("Round is not ready to start timer")
         game_round.status = 'active'
         game_round.started_at = timezone.now()
         game_round.save()
@@ -297,7 +319,7 @@ class GameService:
         """Skip the current round."""
         game_round = Round.objects.select_related('game', 'team').get(id=round_id)
 
-        if game_round.status not in ('active', 'showing_qr', 'actor_ready', 'selecting_actor', 'selecting_category'):
+        if game_round.status not in ('active', 'showing_qr', 'prompt_reveal', 'actor_ready', 'selecting_actor', 'selecting_category'):
             raise ValueError("Round cannot be skipped in current state")
 
         now = timezone.now()
@@ -420,6 +442,9 @@ class GameService:
                     'actor_name': round_obj.actor.name if round_obj.actor else None,
                     'category_name': round_obj.category.name if round_obj.category else None,
                     'category_icon': round_obj.category.icon if round_obj.category else None,
+                    'prompt_title': round_obj.prompt.title if round_obj.prompt else None,
+                    'prompt_title_ar': round_obj.prompt.title_ar if round_obj.prompt else None,
+                    'prompt_image_url': round_obj.prompt.get_image_display_url() if round_obj.prompt else None,
                     'status': round_obj.status,
                     'token': round_obj.token,
                     'started_at': round_obj.started_at.isoformat() if round_obj.started_at else None,
