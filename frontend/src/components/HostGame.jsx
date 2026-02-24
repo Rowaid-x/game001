@@ -180,42 +180,34 @@ export default function HostGame() {
           </div>
         )}
 
-        {/* Prompt Reveal — Host sees prompt, shows it to actor, then starts timer */}
-        {(round.status === 'prompt_reveal' || round.status === 'showing_qr' || round.status === 'actor_ready') && (
-          <div className="text-center animate-scale-in w-full max-w-2xl">
-            <div className="mb-4">
-              <div className="inline-block px-6 py-2 rounded-full mb-3" style={{ backgroundColor: activeTeam?.color + '30' }}>
-                <span className="font-bold text-lg" style={{ color: activeTeam?.color }}>
-                  {activeTeam?.name}
-                </span>
-                <span className="text-white/40 mx-2">—</span>
-                <span className="text-white/70">{round.actor_name} is acting</span>
-              </div>
-              <h2 className="text-3xl lg:text-4xl font-display font-black text-white mb-2">
-                {round.category_icon} {round.category_name}
-              </h2>
-            </div>
-
-            {/* Prompt card — only actor should see this */}
-            <div className="card mx-auto max-w-md mb-6">
-              <p className="text-white/40 text-xs uppercase tracking-wider mb-2">Show only to the actor</p>
-              {round.prompt_image_url && (
-                <img
-                  src={round.prompt_image_url}
-                  alt="Prompt"
-                  className="w-full max-h-48 object-cover rounded-xl mb-3"
-                />
-              )}
-              <h3 className="text-3xl font-black text-white">{round.prompt_title}</h3>
-              {round.prompt_title_ar && (
-                <p className="text-xl text-white/50 font-arabic mt-1" dir="rtl">{round.prompt_title_ar}</p>
-              )}
-            </div>
-
-            <p className="text-white/40 text-sm mb-6">
-              Let <span className="text-white font-bold">{round.actor_name}</span> see the prompt, then press Start when ready
+        {/* Showing QR — Actor scans to see prompt on their phone */}
+        {round.status === 'showing_qr' && (
+          <div className="text-center animate-scale-in">
+            <p className="text-white/50 mb-2 text-lg">
+              <span className="font-bold text-white">{round.actor_name}</span>, scan this QR code
             </p>
+            <h2 className="text-3xl lg:text-4xl font-display font-black text-white mb-6">
+              {round.category_icon} {round.category_name}
+            </h2>
+            <div className="inline-block bg-white p-6 rounded-3xl shadow-2xl mb-4">
+              <QRCodeSVG
+                value={`${getBaseUrl()}/act/${round.id}?token=${round.token}`}
+                size={280}
+                level="M"
+              />
+            </div>
+            <p className="text-white/30 text-sm">Only the actor should scan this code</p>
+          </div>
+        )}
 
+        {/* Actor Ready — Actor has seen the prompt on their phone */}
+        {round.status === 'actor_ready' && (
+          <div className="text-center animate-bounce-in">
+            <div className="text-6xl mb-4">🎭</div>
+            <h2 className="text-4xl lg:text-5xl font-display font-black text-white mb-4">
+              {round.actor_name} is Ready!
+            </h2>
+            <p className="text-white/50 text-lg mb-8">Press start when the actor is in position</p>
             <button
               onClick={handleStartTimer}
               className="px-12 py-5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-black text-2xl rounded-2xl

@@ -204,7 +204,7 @@ class GameService:
         game_round.category = category
         game_round.prompt = prompt
         game_round.token = token
-        game_round.status = 'prompt_reveal'
+        game_round.status = 'showing_qr'
         game_round.save()
 
         prompt.times_used += 1
@@ -442,9 +442,6 @@ class GameService:
                     'actor_name': round_obj.actor.name if round_obj.actor else None,
                     'category_name': round_obj.category.name if round_obj.category else None,
                     'category_icon': round_obj.category.icon if round_obj.category else None,
-                    'prompt_title': round_obj.prompt.title if round_obj.prompt else None,
-                    'prompt_title_ar': round_obj.prompt.title_ar if round_obj.prompt else None,
-                    'prompt_image_url': round_obj.prompt.get_image_display_url() if round_obj.prompt else None,
                     'status': round_obj.status,
                     'token': round_obj.token,
                     'started_at': round_obj.started_at.isoformat() if round_obj.started_at else None,
